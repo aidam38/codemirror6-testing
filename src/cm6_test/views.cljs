@@ -1,23 +1,32 @@
 (ns cm6-test.views
   (:require [reagent.core :as r]
             [applied-science.js-interop :as j]
-            ["@codemirror/state" :refer [EditorState]]
-            ["@codemirror/view" :refer [EditorView keymap]]
-            ["@codemirror/commands" :refer [defaultKeymap]]
-            ["@codemirror/lang-javascript" :refer [javascript]]))
+            ["@codemirror/basic-setup" :refer [EditorState EditorView basicSetup]]
+            ["@codemirror/lang-php" :refer [php]]))
 
 (defn editor []
   (r/with-let
-    [mount!
-     (fn [el]
-       (new EditorView
-            (j/obj :state
-                   (.create EditorState
-                            #{:extensions [(.of keymap defaultKeymap), (javascript)]})
-                   :parent el)))]
+    [mount! (fn [el]
+              (when el
+                (new EditorView
+                     (j/obj :state (.create EditorState
+                                            #js{:extensions
+                                                #js[basicSetup
+                                                    (php)
+                                                    (.theme EditorView #js{".cm-scroller" #js{:font-family "Fira Code"}})]})
+                            :parent el))))]
     [:div
      {:ref mount!}]))
 
-(defn app []
-  [:div.w-96.h-48.m-auto.mt-24.bg-red-50
+(defn lang-chooser []
+  [:div.absolute])
+
+(defn full-editor []
+  [:<>
+   [lang-chooser]
    [editor]])
+
+(defn app []
+  [:div.w-96.h-48.m-auto.mt-24
+   [:div.rounded-md.overflow-auto.relative.border.shadow-lg.bg-white
+    [full-editor]]])
